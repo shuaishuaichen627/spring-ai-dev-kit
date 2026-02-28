@@ -95,6 +95,8 @@ mcp:
       username: ${ELK_USERNAME:elastic}
       password: ${ELK_PASSWORD:changeme}
       index-pattern: ${ELK_INDEX_PATTERN:logs-*}
+      connect-timeout: 5000
+      read-timeout: 30000
     
     # Prometheus 配置
     prometheus:
@@ -103,16 +105,22 @@ mcp:
       # 如果需要认证
       username: ${PROMETHEUS_USERNAME:}
       password: ${PROMETHEUS_PASSWORD:}
+      connect-timeout: 5000
+      read-timeout: 30000
     
     # SQL 报表配置
     sql-report:
       enabled: ${MCP_SQL_REPORT_ENABLED:true}
-      # 报表数据源（可以与主数据源不同）
-      datasource-url: ${REPORT_DB_URL:jdbc:postgresql://localhost:5432/report_db}
-      datasource-username: ${REPORT_DB_USERNAME:postgres}
-      datasource-password: ${REPORT_DB_PASSWORD:postgres}
+      # 报表数据源（可以与主数据源不同，留空则使用主数据源）
+      datasource-url: ${REPORT_DB_URL:}
+      datasource-username: ${REPORT_DB_USERNAME:}
+      datasource-password: ${REPORT_DB_PASSWORD:}
       # 报表导出目录
       export-dir: ${REPORT_EXPORT_DIR:./reports}
+      # 最大查询行数
+      max-rows: 10000
+      # 查询超时时间（秒）
+      query-timeout: 60
 
 # ==================== Swagger 配置 ====================
 springdoc:
