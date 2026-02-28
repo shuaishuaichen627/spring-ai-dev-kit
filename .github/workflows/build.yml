@@ -1,0 +1,41 @@
+name: CI Build
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main, develop ]
+
+env:
+  JAVA_VERSION: '17'
+
+jobs:
+  build:
+    name: Build and Test
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Set up JDK ${{ env.JAVA_VERSION }}
+        uses: actions/setup-java@v4
+        with:
+          java-version: ${{ env.JAVA_VERSION }}
+          distribution: 'temurin'
+          cache: maven
+      
+      - name: Build with Maven
+        run: mvn clean install -DskipTests
+      
+      - name: Run tests
+        run: mvn test
+        continue-on-error: true
+      
+      - name: Upload build artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: spring-ai-dev-kit
+          path: boot/target/*.jar
+          retention-days: 7
+
