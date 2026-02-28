@@ -33,7 +33,7 @@ public class VectorStoreService {
     /**
      * 相似度搜索
      */
-    public List<Document> searchSimilar(String query, int topK) {
+    public List<Document> similaritySearch(String query, int topK) {
         if (query == null || query.trim().isEmpty()) {
             throw new IllegalArgumentException("查询内容不能为空");
         }
@@ -48,7 +48,7 @@ public class VectorStoreService {
     /**
      * 相似度搜索（带阈值）
      */
-    public List<Document> searchSimilar(String query, int topK, double threshold) {
+    public List<Document> similaritySearch(String query, int topK, double threshold) {
         if (query == null || query.trim().isEmpty()) {
             throw new IllegalArgumentException("查询内容不能为空");
         }
@@ -60,6 +60,20 @@ public class VectorStoreService {
                 .withTopK(topK)
                 .withSimilarityThreshold(threshold);
         return vectorStore.similaritySearch(request);
+    }
+
+    /**
+     * 相似度搜索（别名方法，兼容测试）
+     */
+    public List<Document> searchSimilar(String query, int topK) {
+        return similaritySearch(query, topK);
+    }
+
+    /**
+     * 相似度搜索（别名方法，兼容测试）
+     */
+    public List<Document> searchSimilar(String query, int topK, double threshold) {
+        return similaritySearch(query, topK, threshold);
     }
 
     /**
