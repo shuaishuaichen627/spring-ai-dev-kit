@@ -9,7 +9,7 @@
 
 **基于 Spring AI 的智能研发助手，整合 RAG、MCP 和 AI Agent 能力**
 
-[快速开始](#快速开始) • [功能特性](#功能特性) • [架构设计](#架构设计) • [部署指南](#部署指南)
+[快速开始](#-快速启动) • [功能特性](#-功能特性) • [系统对接](#-系统对接) • [文档](#-完整文档)
 
 </div>
 
@@ -17,159 +17,115 @@
 
 ## 📖 项目简介
 
-Spring AI Dev Kit 是一个企业级智能研发助手平台，基于 Spring AI 框架构建，整合了 RAG（检索增强生成）、MCP（模型上下文协议）和 AI Agent 三大核心能力，旨在提升研发效率，实现智能化的研发流程。
+Spring AI Dev Kit 是一个企业级智能研发助手平台，基于 Spring AI 框架构建，整合了 RAG（检索增强生成）、MCP（模型上下文协议）和 AI Agent 三大核心能力。
 
-### 核心能力
+### 🎯 核心特性
 
-- **RAG 静态知识库**：支持 Git 代码库解析、文档解析（MD/PDF），构建企业级知识库
-- **MCP 动态工具集**：内置 ELK 日志查询、Prometheus 监控分析等研发运营工具
-- **AI Agent 智能编排**：自动调度 RAG 和 MCP 能力，实现智能问答和任务自动化
+- **真实系统对接**：可直接对接任何企业的 ELK 和 Prometheus 系统
+- **AI 自动识别**：根据用户问题自动调用相应的工具
+- **灵活配置**：只需修改配置文件即可对接不同系统
+- **完善文档**：从快速开始到系统对接，应有尽有
 
----
+### ✨ 功能特性
 
-## ✨ 功能特性
-
-### 🔍 RAG 知识库
-
+#### 🔍 RAG 知识库
 - ✅ Git 代码库自动拉取与解析
 - ✅ 文档解析（Markdown、PDF）
 - ✅ PGVector 向量数据库存储
 - ✅ 语义相似度检索
-- ✅ 支持多种编程语言代码解析
 
-### 🛠️ MCP 工具集
-
-- ✅ ELK 日志查询工具
-- ✅ Prometheus 监控分析工具
+#### 🛠️ MCP 工具集
+- ✅ **ELK 日志查询工具**（真实对接 Elasticsearch）
+- ✅ **Prometheus 监控工具**（真实对接 Prometheus）
 - ✅ SQL 报表导出工具
 - ✅ 代码评审工具
-- ✅ 基于 Spring AI Function Calling
+- ✅ 基于 Spring AI @Tool 注解
 - ✅ AI 自动识别并调用工具
 
-### 🤖 AI Agent
-
+#### 🤖 AI Agent
 - ✅ Ollama / OpenAI 大模型支持
 - ✅ SSE 流式响应
 - ✅ RAG + MCP 智能编排
 - ✅ 上下文感知对话
-- ✅ 多轮对话支持
 
 ---
 
-## 🏗️ 架构设计
-
-### 模块划分
-
-```
-spring-ai-dev-kit
-├── common          # 公共模块（异常处理、工具类、统一返回）
-├── rag             # RAG 知识库模块
-├── mcp             # MCP 工具模块
-├── agent           # AI Agent 模块
-├── config          # 配置模块
-└── boot            # 启动模块
-```
-
-### 技术栈
-
-| 技术 | 版本 | 说明 |
-|------|------|------|
-| Spring Boot | 3.2.0 | 应用框架 |
-| Spring AI | 1.0.0 | AI 集成框架 |
-| Ollama | Latest | 本地大模型 |
-| PostgreSQL + PGVector | Latest | 向量数据库 |
-| Redis | 7.x | 缓存 |
-| Docker | Latest | 容器化部署 |
-| Nginx | Latest | 反向代理 |
-
----
-
-## 🚀 快速开始
+## 🚀 快速启动
 
 ### 前置要求
-
 - Java 17+
 - Maven 3.8+
 - Docker & Docker Compose
-- Git
 
-### 本地开发
-
-1. **克隆项目**
+### 方式一：Docker 一键部署（推荐）
 
 ```bash
-git clone https://github.com/your-repo/spring-ai-dev-kit.git
+# 1. 克隆项目
+git clone https://github.com/your-username/spring-ai-dev-kit.git
 cd spring-ai-dev-kit
+
+# 2. 配置环境变量
+cp env.example .env
+# 编辑 .env 文件，填入你的配置
+
+# 3. 一键部署
+chmod +x deploy.sh
+./deploy.sh
+
+# 4. 访问应用
+# http://localhost/swagger-ui
 ```
 
-2. **启动依赖服务**
+### 方式二：本地开发
 
 ```bash
+# 1. 启动依赖服务
 docker-compose up -d postgres redis ollama
-```
 
-3. **下载 Ollama 模型**
-
-```bash
+# 2. 下载模型
 docker exec -it spring-ai-ollama ollama pull qwen2.5:7b
-```
 
-4. **编译项目**
-
-```bash
-mvn clean package -DskipTests
-```
-
-5. **启动应用**
-
-```bash
+# 3. 编译运行
+mvn clean install
 java -jar boot/target/boot-1.0.0.jar
 ```
 
-6. **访问应用**
-
-- Swagger UI: http://localhost:8080/swagger-ui
-- API Docs: http://localhost:8080/v3/api-docs
-
 ---
 
-## 🐳 Docker 部署
+## 🔌 系统对接
 
-### 一键部署
+### ELK 日志系统对接
+
+只需配置以下环境变量：
 
 ```bash
-# 构建并启动所有服务
-docker-compose up -d
-
-# 查看日志
-docker-compose logs -f spring-ai-dev-kit
-
-# 停止服务
-docker-compose down
+ELK_BASE_URL=http://your-elasticsearch:9200
+ELK_USERNAME=elastic
+ELK_PASSWORD=your-password
+ELK_INDEX_PATTERN=logs-*
 ```
 
-### 服务端口
+**使用示例：**
+```bash
+curl -N "http://localhost:8080/api/agent/chat?message=查询最近1小时的ERROR日志"
+```
 
-| 服务 | 端口 | 说明 |
-|------|------|------|
-| Nginx | 80 | 反向代理 |
-| Spring AI Dev Kit | 8080 | 应用服务 |
-| PostgreSQL | 5432 | 数据库 |
-| Redis | 6379 | 缓存 |
-| Ollama | 11434 | 大模型服务 |
+### Prometheus 监控系统对接
+
+只需配置以下环境变量：
+
+```bash
+PROMETHEUS_BASE_URL=http://your-prometheus:9090
+```
+
+**使用示例：**
+```bash
+curl -N "http://localhost:8080/api/agent/chat?message=查询node_cpu_seconds_total指标"
+```
+
+详细对接说明请查看 [INTEGRATION.md](INTEGRATION.md)
 
 ---
-
-## 📖 完整文档
-
-- [快速开始](QUICKSTART.md) - 5 分钟快速体验
-- [配置说明](CONFIG.md) - 详细的配置文档
-- [工具使用](TOOLS.md) - MCP 工具使用指南
-- [系统对接](INTEGRATION.md) - 如何对接到任何系统
-- [测试指南](TESTING.md) - 完整的测试流程
-- [检查清单](CHECKLIST.md) - 代码完整性检查
-- [开发文档](DEVELOPMENT.md) - 开发指南
-- [架构设计](ARCHITECTURE.md) - 系统架构说明
 
 ## 📚 API 使用示例
 
@@ -183,9 +139,6 @@ curl -N "http://localhost:8080/api/agent/chat?message=查询最近1小时的错�
 curl -N "http://localhost:8080/api/agent/chat?message=查看服务器192.168.1.100的CPU使用率"
 
 # AI 会自动调用 Prometheus 工具查询监控
-curl -N "http://localhost:8080/api/agent/chat?message=帮我评审这段代码：public void test() { ... }"
-
-# AI 会自动调用代码评审工具
 ```
 
 ---
@@ -216,12 +169,57 @@ PROMETHEUS_BASE_URL=http://your-prometheus:9090
 
 ---
 
+## 🏗️ 架构设计
+
+### 模块划分
+
+```
+spring-ai-dev-kit
+├── common          # 公共模块（异常处理、工具类、统一返回）
+├── rag             # RAG 知识库模块
+├── mcp             # MCP 工具模块（真实对接 ELK 和 Prometheus）
+├── agent           # AI Agent 模块
+├── config          # 配置模块
+└── boot            # 启动模块
+```
+
+### 技术栈
+
+| 技术 | 版本 | 说明 |
+|------|------|------|
+| Spring Boot | 3.2.0 | 应用框架 |
+| Spring AI | 1.0.0 | AI 集成框架 |
+| Ollama | Latest | 本地大模型 |
+| PostgreSQL + PGVector | Latest | 向量数据库 |
+| Elasticsearch | 8.x | 日志系统 |
+| Prometheus | 2.x | 监控系统 |
+| Redis | 7.x | 缓存 |
+| Docker | Latest | 容器化部署 |
+
+---
+
+## 📖 完整文档
+
+- [快速开始](QUICKSTART.md) - 5 分钟快速体验
+- [配置说明](CONFIG.md) - 详细的配置文档
+- [工具使用](TOOLS.md) - MCP 工具使用指南
+- [系统对接](INTEGRATION.md) - 如何对接到任何系统
+- [测试指南](TESTING.md) - 完整的测试流程
+- [检查清单](CHECKLIST.md) - 代码完整性检查
+- [开发文档](DEVELOPMENT.md) - 开发指南
+- [架构设计](ARCHITECTURE.md) - 系统架构说明
+- [项目总结](SUMMARY.md) - 项目交付总结
+
+---
+
 ## 🛣️ Roadmap
 
 - [x] RAG 基础能力
-- [x] MCP 工具集成
+- [x] MCP 工具集成（真实对接）
 - [x] AI Agent 编排
 - [x] Docker 部署
+- [x] ELK 日志查询（真实对接）
+- [x] Prometheus 监控查询（真实对接）
 - [ ] 前端 UI 界面
 - [ ] 更多 MCP 工具
 - [ ] 多模态支持
@@ -239,6 +237,8 @@ PROMETHEUS_BASE_URL=http://your-prometheus:9090
 4. 推送到分支 (`git push origin feature/AmazingFeature`)
 5. 提交 Pull Request
 
+详见 [CONTRIBUTING.md](CONTRIBUTING.md)
+
 ---
 
 ## 📄 License
@@ -249,16 +249,19 @@ PROMETHEUS_BASE_URL=http://your-prometheus:9090
 
 ## 📧 联系方式
 
-- 项目主页：https://github.com/your-repo/spring-ai-dev-kit
-- Issue 反馈：https://github.com/your-repo/spring-ai-dev-kit/issues
+- 项目主页：https://github.com/your-username/spring-ai-dev-kit
+- Issue 反馈：https://github.com/your-username/spring-ai-dev-kit/issues
+
+---
+
+## 🌟 Star History
+
+如果这个项目对你有帮助，请给个 ⭐️ Star 支持一下！
 
 ---
 
 <div align="center">
 
-**如果这个项目对你有帮助，请给个 ⭐️ Star 支持一下！**
-
-Made with ❤️ by Spring AI Dev Kit Team
+**Made with ❤️ by Spring AI Dev Kit Team**
 
 </div>
-
