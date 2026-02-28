@@ -1,0 +1,139 @@
+server:
+  port: 8080
+
+spring:
+  application:
+    name: spring-ai-dev-kit
+  
+  # ==================== Spring AI 配置 ====================
+  ai:
+    # ========== Ollama 本地大模型配置 ==========
+    ollama:
+      # Ollama 服务地址（本地部署）
+      base-url: ${OLLAMA_BASE_URL:http://localhost:11434}
+      chat:
+        enabled: true
+        options:
+          # 模型名称（需要先通过 ollama pull 下载）
+          model: ${OLLAMA_MODEL:qwen2.5:7b}
+          # 温度参数（0-1，越高越随机）
+          temperature: 0.7
+          # 最大 token 数
+          max-tokens: 2000
+    
+    # ========== OpenAI 配置（可选，作为备选） ==========
+    openai:
+      # OpenAI API Key（从环境变量读取）
+      api-key: ${OPENAI_API_KEY:}
+      # API 基础地址（支持代理或第三方服务）
+      base-url: ${OPENAI_BASE_URL:https://api.openai.com}
+      chat:
+        enabled: false
+        options:
+          # 模型名称
+          model: ${OPENAI_MODEL:gpt-4}
+          # 温度参数
+          temperature: 0.7
+          # 最大 token 数
+          max-tokens: 2000
+    
+    # ========== 向量数据库配置（PGVector） ==========
+    vectorstore:
+      pgvector:
+        # 索引类型（HNSW 性能最好）
+        index-type: HNSW
+        # 距离计算方式
+        distance-type: COSINE_DISTANCE
+        # 向量维度（根据 embedding 模型决定）
+        dimensions: 1536
+        # 是否初始化 schema
+        initialize-schema: true
+
+  # ==================== 数据源配置 ====================
+  datasource:
+    url: ${DB_URL:jdbc:postgresql://localhost:5432/spring_ai_dev_kit}
+    username: ${DB_USERNAME:postgres}
+    password: ${DB_PASSWORD:postgres}
+    driver-class-name: org.postgresql.Driver
+    hikari:
+      maximum-pool-size: 10
+      minimum-idle: 5
+      connection-timeout: 30000
+      idle-timeout: 600000
+      max-lifetime: 1800000
+  
+  # JPA 配置
+  jpa:
+    hibernate:
+      ddl-auto: none
+    show-sql: false
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+
+  # ==================== Redis 配置 ====================
+  data:
+    redis:
+      host: ${REDIS_HOST:localhost}
+      port: ${REDIS_PORT:6379}
+      password: ${REDIS_PASSWORD:}
+      database: 0
+      timeout: 3000ms
+      lettuce:
+        pool:
+          max-active: 8
+          max-idle: 8
+          min-idle: 0
+
+# ==================== MCP 工具配置 ====================
+mcp:
+  tools:
+    # ELK 配置
+    elk:
+      enabled: ${MCP_ELK_ENABLED:true}
+      base-url: ${ELK_BASE_URL:http://localhost:9200}
+      username: ${ELK_USERNAME:elastic}
+      password: ${ELK_PASSWORD:changeme}
+      index-pattern: ${ELK_INDEX_PATTERN:logs-*}
+    
+    # Prometheus 配置
+    prometheus:
+      enabled: ${MCP_PROMETHEUS_ENABLED:true}
+      base-url: ${PROMETHEUS_BASE_URL:http://localhost:9090}
+      # 如果需要认证
+      username: ${PROMETHEUS_USERNAME:}
+      password: ${PROMETHEUS_PASSWORD:}
+    
+    # SQL 报表配置
+    sql-report:
+      enabled: ${MCP_SQL_REPORT_ENABLED:true}
+      # 报表数据源（可以与主数据源不同）
+      datasource-url: ${REPORT_DB_URL:jdbc:postgresql://localhost:5432/report_db}
+      datasource-username: ${REPORT_DB_USERNAME:postgres}
+      datasource-password: ${REPORT_DB_PASSWORD:postgres}
+      # 报表导出目录
+      export-dir: ${REPORT_EXPORT_DIR:./reports}
+
+# ==================== Swagger 配置 ====================
+springdoc:
+  api-docs:
+    path: /v3/api-docs
+    enabled: true
+  swagger-ui:
+    path: /swagger-ui
+    enabled: true
+
+# ==================== 日志配置 ====================
+logging:
+  level:
+    root: INFO
+    com.springai: DEBUG
+    org.springframework.ai: DEBUG
+    org.springframework.ai.chat: TRACE
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n"
+  file:
+    name: logs/spring-ai-dev-kit.log
+    max-size: 10MB
+    max-history: 30
+
