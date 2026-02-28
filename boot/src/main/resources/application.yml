@@ -1,9 +1,20 @@
-server:
-  port: 8080
+# ==================== Spring AI Dev Kit 主配置文件 ====================
+# 本文件包含所有环境的通用配置
+# 环境特定配置请查看：
+# - application-dev.yml（开发环境）
+# - application-test.yml（测试环境）
+# - application-prod.yml（生产环境）
+#
+# 使用方式：
+# - 开发环境：java -jar app.jar --spring.profiles.active=dev
+# - 测试环境：java -jar app.jar --spring.profiles.active=test
+# - 生产环境：java -jar app.jar --spring.profiles.active=prod
+# ========================================================================
 
 spring:
-  application:
-    name: spring-ai-dev-kit
+  profiles:
+    # 默认激活开发环境配置
+    active: ${SPRING_PROFILES_ACTIVE:dev}
   
   # ==================== Spring AI 配置 ====================
   ai:

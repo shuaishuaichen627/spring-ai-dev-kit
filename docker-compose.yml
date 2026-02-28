@@ -1,9 +1,9 @@
 version: '3.8'
 
 services:
-  # PostgreSQL + PGVector
+  # PostgreSQL + PGVector（固定版本）
   postgres:
-    image: ankane/pgvector:latest
+    image: ankane/pgvector:v0.5.1
     container_name: spring-ai-postgres
     environment:
       POSTGRES_DB: spring_ai_dev_kit
@@ -16,10 +16,15 @@ services:
       - ./init-db.sql:/docker-entrypoint-initdb.d/init-db.sql
     networks:
       - spring-ai-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
-  # Redis
+  # Redis（固定版本）
   redis:
-    image: redis:7-alpine
+    image: redis:7.2.3-alpine
     container_name: spring-ai-redis
     ports:
       - "6379:6379"
@@ -27,10 +32,15 @@ services:
       - redis_data:/data
     networks:
       - spring-ai-network
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
 
-  # Ollama
+  # Ollama（固定版本）
   ollama:
-    image: ollama/ollama:latest
+    image: ollama/ollama:0.1.17
     container_name: spring-ai-ollama
     ports:
       - "11434:11434"
@@ -38,45 +48,129 @@ services:
       - ollama_data:/root/.ollama
     networks:
       - spring-ai-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:11434/api/tags"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Elasticsearch（可选，固定版本）
+  elasticsearch:
+    image: elasticsearch:8.11.1
+    container_name: spring-ai-elasticsearch
+    environment:
+      - discovery.type=single-node
+      - xpack.security.enabled=false
+      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+    ports:
+      - "9200:9200"
+    volumes:
+      - elasticsearch_data:/usr/share/elasticsearch/data
+    networks:
+      - spring-ai-network
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:9200/_cluster/health || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+    profiles:
+      - elk
+
+  # Prometheus（可选，固定版本）
+  prometheus:
+    image: prom/prometheus:v2.48.0
+    container_name: spring-ai-prometheus
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml
+      - prometheus_data:/prometheus
+    networks:
+      - spring-ai-network
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:9090/-/healthy"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    profiles:
+      - monitoring
 
   # Spring AI Dev Kit
   spring-ai-dev-kit:
-    build: .
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: spring-ai-dev-kit:1.0.0
     container_name: spring-ai-dev-kit
     ports:
       - "8080:8080"
     environment:
+      SPRING_PROFILES_ACTIVE: prod
       SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/spring_ai_dev_kit
       SPRING_DATASOURCE_USERNAME: postgres
       SPRING_DATASOURCE_PASSWORD: postgres
       SPRING_DATA_REDIS_HOST: redis
       SPRING_AI_OLLAMA_BASE_URL: http://ollama:11434
     depends_on:
-      - postgres
-      - redis
-      - ollama
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      ollama:
+        condition: service_healthy
     networks:
       - spring-ai-network
+    volumes:
+      - ./reports:/data/reports
+      - ./logs:/var/log/spring-ai-dev-kit
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/actuator/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
 
-  # Nginx
+  # Nginx（固定版本）
   nginx:
-    image: nginx:alpine
+    image: nginx:1.25.3-alpine
     container_name: spring-ai-nginx
     ports:
       - "80:80"
+      - "443:443"
     volumes:
       - ./nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./ssl:/etc/nginx/ssl:ro
     depends_on:
       - spring-ai-dev-kit
     networks:
       - spring-ai-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
 
 volumes:
   postgres_data:
+    driver: local
   redis_data:
+    driver: local
   ollama_data:
+    driver: local
+  elasticsearch_data:
+    driver: local
+  prometheus_data:
+    driver: local
 
 networks:
   spring-ai-network:
     driver: bridge
+    ipam:
+      config:
+        - subnet: 172.20.0.0/16
 
