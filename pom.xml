@@ -36,8 +36,6 @@
         <!-- Spring AI 使用 1.0.0-M4 里程碑版本（最新稳定版） -->
         <spring-ai.version>1.0.0-M4</spring-ai.version>
 
-         <spring-ai.version>1.0.0-M4</spring-ai.version>
-
         <lombok.version>1.18.30</lombok.version>
         <hutool.version>5.8.23</hutool.version>
         <pgvector.version>0.1.4</pgvector.version>
