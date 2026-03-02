@@ -62,19 +62,6 @@ public class VectorStoreService {
         return vectorStore.similaritySearch(request);
     }
 
-    /**
-     * 相似度搜索（别名方法，兼容测试）
-     */
-    public List<Document> searchSimilar(String query, int topK) {
-        return similaritySearch(query, topK);
-    }
-
-    /**
-     * 相似度搜索（别名方法，兼容测试）
-     */
-    public List<Document> searchSimilar(String query, int topK, double threshold) {
-        return similaritySearch(query, topK, threshold);
-    }
 
     /**
      * 删除文档
