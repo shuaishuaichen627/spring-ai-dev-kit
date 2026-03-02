@@ -20,6 +20,19 @@
             <groupId>com.springai</groupId>
             <artifactId>common</artifactId>
         </dependency>
+        
+        <!-- Spring AI Core (包含 @Tool 注解) -->
+        <dependency>
+            <groupId>org.springframework.ai</groupId>
+            <artifactId>spring-ai-core</artifactId>
+        </dependency>
+        
+        <!-- SpringDoc OpenAPI (包含 Swagger 注解) -->
+        <dependency>
+            <groupId>org.springdoc</groupId>
+            <artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>
+        </dependency>
+        
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-web</artifactId>
